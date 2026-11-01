@@ -1,11 +1,11 @@
-import CircuitTester from '@/components/circuit-tester'
+import InventoryCatalog from '@/components/inventory-catalog'
 
 const navItems = [
   { label: 'Overview', active: false },
-  { label: 'Circuit Tester', active: true },
+  { label: 'Circuit Tester', active: false },
   { label: 'Projects', active: false },
   { label: 'Events', active: false },
-  { label: 'Inventory', active: false },
+  { label: 'Inventory', active: true },
   { label: 'Members', active: false },
 ]
 
@@ -35,25 +35,25 @@ export default function Home() {
             </nav>
           </div>
           <div className="mt-8 hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:block">
-            <p className="eyebrow">Bench status</p>
-            <div className="mt-3 flex items-center gap-2 text-sm text-fog"><span className="status-dot status-dot-idle" /> No device linked</div>
-            <p className="mt-2 text-xs leading-5 text-muted">Connect an Arduino or ESP32 to begin a live hardware session.</p>
+            <p className="eyebrow">Inventory sync</p>
+            <div className="mt-3 flex items-center gap-2 text-sm text-fog"><span className="status-dot status-dot-working" /> Catalog online</div>
+            <p className="mt-2 text-xs leading-5 text-muted">Availability is ready for reservations and workshop checkouts.</p>
           </div>
         </aside>
 
         <section className="relative z-10 min-w-0 flex-1 pt-6 lg:pt-0">
           <header className="flex flex-col justify-between gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-start">
             <div>
-              <p className="eyebrow">Web-only hardware workspace / 01</p>
-              <h1 className="mt-3 max-w-2xl text-4xl font-medium tracking-[-0.045em] text-white sm:text-5xl">Circuit Tester<span className="text-cyan">.</span></h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">A calm, live workspace for bringing a board online, watching sensor output, and confirming every component before it reaches a build.</p>
+              <p className="eyebrow">Club operations / 02</p>
+              <h1 className="mt-3 max-w-2xl text-4xl font-medium tracking-[-0.045em] text-white sm:text-5xl">Inventory<span className="text-cyan">.</span></h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">Everything the lab has on hand, from distance sensors to drive motors. Reserve the pieces you need before your next build session.</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden rounded-full border border-white/10 px-3 py-2 text-[11px] text-muted sm:block"><span className="status-dot status-dot-idle mr-2" />Local session</div>
+              <div className="hidden rounded-full border border-white/10 px-3 py-2 text-[11px] text-muted sm:block"><span className="status-dot status-dot-working mr-2" />Live catalog</div>
               <button className="icon-button" aria-label="Toggle display theme">☼</button>
             </div>
           </header>
-          <div className="py-6"><CircuitTester /></div>
+          <div className="py-6"><InventoryCatalog /></div>
         </section>
       </div>
     </main>
