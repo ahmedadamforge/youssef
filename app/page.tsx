@@ -1,0 +1,61 @@
+import CircuitTester from '@/components/circuit-tester'
+
+const navItems = [
+  { label: 'Overview', active: false },
+  { label: 'Circuit Tester', active: true },
+  { label: 'Projects', active: false },
+  { label: 'Events', active: false },
+  { label: 'Inventory', active: false },
+  { label: 'Members', active: false },
+]
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-ink text-fog">
+      <div className="site-grid" aria-hidden="true" />
+      <div className="mx-auto flex min-h-screen max-w-[1500px] flex-col px-5 py-5 lg:flex-row lg:gap-6 lg:px-8 lg:py-8">
+        <aside className="z-10 flex shrink-0 flex-col justify-between border-b border-white/10 pb-5 lg:w-[236px] lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
+          <div>
+            <div className="mb-10 flex items-center gap-3 px-1">
+              <div className="brand-mark"><span /><span /><span /></div>
+              <div>
+                <p className="text-[11px] font-semibold tracking-[0.24em] text-cyan">CMC ROBOTICS</p>
+                <p className="mt-1 text-[9px] tracking-[0.28em] text-muted">LAB / RABAT</p>
+              </div>
+            </div>
+            <p className="eyebrow mb-3 px-1">Workspace</p>
+            <nav className="space-y-1" aria-label="Primary navigation">
+              {navItems.map((item) => (
+                <button key={item.label} className={`nav-item ${item.active ? 'nav-item-active' : ''}`}>
+                  <span className="nav-dot" />
+                  {item.label}
+                  {item.active && <span className="ml-auto text-cyan">↗</span>}
+                </button>
+              ))}
+            </nav>
+          </div>
+          <div className="mt-8 hidden rounded-2xl border border-white/10 bg-white/[0.03] p-4 lg:block">
+            <p className="eyebrow">Bench status</p>
+            <div className="mt-3 flex items-center gap-2 text-sm text-fog"><span className="status-dot status-dot-idle" /> No device linked</div>
+            <p className="mt-2 text-xs leading-5 text-muted">Connect an Arduino or ESP32 to begin a live hardware session.</p>
+          </div>
+        </aside>
+
+        <section className="relative z-10 min-w-0 flex-1 pt-6 lg:pt-0">
+          <header className="flex flex-col justify-between gap-5 border-b border-white/10 pb-6 sm:flex-row sm:items-start">
+            <div>
+              <p className="eyebrow">Web-only hardware workspace / 01</p>
+              <h1 className="mt-3 max-w-2xl text-4xl font-medium tracking-[-0.045em] text-white sm:text-5xl">Circuit Tester<span className="text-cyan">.</span></h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted">A calm, live workspace for bringing a board online, watching sensor output, and confirming every component before it reaches a build.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden rounded-full border border-white/10 px-3 py-2 text-[11px] text-muted sm:block"><span className="status-dot status-dot-idle mr-2" />Local session</div>
+              <button className="icon-button" aria-label="Toggle display theme">☼</button>
+            </div>
+          </header>
+          <div className="py-6"><CircuitTester /></div>
+        </section>
+      </div>
+    </main>
+  )
+}
