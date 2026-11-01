@@ -1,11 +1,12 @@
+import Link from 'next/link'
 import InventoryCatalog from '@/components/inventory-catalog'
 
-const navItems = [
-  { label: 'Overview', active: false },
-  { label: 'Circuit Tester', active: false },
+const navItems: { label: string; active: boolean; href?: string }[] = [
+  { label: 'Overview', active: false, href: '/' },
+  { label: 'Circuit Tester', active: false, href: '/circuit-tester' },
   { label: 'Projects', active: false },
   { label: 'Events', active: false },
-  { label: 'Inventory', active: true },
+  { label: 'Inventory', active: true, href: '/' },
   { label: 'Members', active: false },
 ]
 
@@ -25,12 +26,14 @@ export default function Home() {
             </div>
             <p className="eyebrow mb-3 px-1">Workspace</p>
             <nav className="space-y-1" aria-label="Primary navigation">
-              {navItems.map((item) => (
-                <button key={item.label} className={`nav-item ${item.active ? 'nav-item-active' : ''}`}>
+              {navItems.map((item) => item.href ? (
+                <Link key={item.label} href={item.href} className={`nav-item ${item.active ? 'nav-item-active' : ''}`}>
                   <span className="nav-dot" />
                   {item.label}
                   {item.active && <span className="ml-auto text-cyan">↗</span>}
-                </button>
+                </Link>
+              ) : (
+                <button key={item.label} className="nav-item"><span className="nav-dot" />{item.label}</button>
               ))}
             </nav>
           </div>
