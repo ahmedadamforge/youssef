@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import InventoryCatalog from '@/components/inventory-catalog'
+import BrandMark from '@/components/brand-mark'
 
 const navItems: { label: string; active: boolean; href?: string }[] = [
   { label: 'Overview', active: false, href: '/' },
@@ -18,7 +19,7 @@ export default function Home() {
         <aside className="z-10 flex shrink-0 flex-col justify-between border-b border-white/10 pb-5 lg:w-[236px] lg:border-b-0 lg:border-r lg:pb-0 lg:pr-6">
           <div>
             <div className="mb-10 flex items-center gap-3 px-1">
-              <div className="brand-mark"><span /><span /><span /></div>
+              <BrandMark />
               <div>
                 <p className="text-[11px] font-semibold tracking-[0.24em] text-cyan">CMC ROBOTICS</p>
                 <p className="mt-1 text-[9px] tracking-[0.28em] text-muted">LAB / RABAT</p>

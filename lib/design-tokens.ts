@@ -1,4 +1,9 @@
 export const designTokens = {
+  brand: {
+    name: 'CMC Robotics Club / Rabat',
+    source: 'https://robotics.ma/',
+    treatment: 'Dark teal surfaces, cyan technical accents, warm orange signal accents, compact editorial typography',
+  },
   colors: {
     ink: '#07161E',
     surface: '#0B202A',
