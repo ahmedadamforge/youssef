@@ -15,7 +15,9 @@ public/
   manus-routes.json    Preview route manifest
   assets/              Future supplied or uploaded club media
 mobile/
-  expo/                Planned React Native + NativeWind application
+  app/                 Expo Router screens for dashboard, inventory, and profile
+  lib/                 Shared mobile design tokens
+  package.json         Expo + NativeWind dependency boundary
 server/
   db/                  Planned managed database adapters and migrations
   auth/                Planned member session and role adapters

@@ -8,6 +8,7 @@
 - [x] Provide a real-time terminal for received serial lines and sending AT commands or arbitrary commands.
 - [x] Provide readable live sensor values and component test cards for servo, ultrasonic sensor, and LED workflows.
 - [x] Show clear `Working`, `Faulty`, and `Awaiting signal` states derived from serial responses and test actions.
+- [x] Create the Expo + NativeWind mobile source structure with inventory and member profile screens.
 
 ## Shared club platform — planned
 - [ ] Build the responsive Home/Dashboard with the club logo, stats, upcoming events, and recent robotics projects.
@@ -16,4 +17,4 @@
 - [ ] Add authenticated member sessions with Supabase or Firebase.
 - [ ] Build the Inventory catalog for sensors, motors, microcontrollers, and other electronics, including availability and borrowing.
 - [ ] Build Member Profile and Leaderboard screens with points, activity, and borrowing history.
-- [ ] Add the React Native Expo + NativeWind mobile client using the shared design tokens.
+- [ ] Initialize the managed Expo runtime and connect the mobile client to authentication and database services.
