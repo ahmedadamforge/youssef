@@ -7,7 +7,7 @@ type SerialPortLike = { open: (options: { baudRate: number }) => Promise<void>; 
 type SerialLike = { requestPort: () => Promise<SerialPortLike>; getPorts: () => Promise<SerialPortLike[]>; addEventListener?: (event: string, handler: () => void) => void }
 type NavigatorWithSerial = Navigator & { serial?: SerialLike }
 type LogEntry = { id: number; time: string; direction: 'rx' | 'tx' | 'system'; text: string }
-type TestState = 'idle' | 'working' | 'faulty'
+type TestState = 'idle' | 'testing' | 'working' | 'faulty'
 type TestKey = 'board' | 'ultrasonic' | 'pir' | 'line' | 'dht11' | 'imu' | 'servo' | 'dcMotor' | 'stepper' | 'driver' | 'relay' | 'led' | 'power'
 type HandshakeState = 'idle' | 'working' | 'faulty'
 
@@ -156,7 +156,7 @@ export default function CircuitTester() {
   const runTest = async (test: HardwareTest) => {
     if (!port) return
     pendingRef.current.add(test.key); activeTestRef.current = test.key
-    setTestStates((state) => ({ ...state, [test.key]: 'working' }));
+    setTestStates((state) => ({ ...state, [test.key]: 'testing' }));
     if (test.key === 'board') setHandshake('working')
     addLog(`Running ${test.label}…`, 'system')
     await writeToPort(port, test.command)
@@ -192,7 +192,7 @@ export default function CircuitTester() {
         </div>
       </div>
 
-      <div><div className="mb-3 flex items-end justify-between"><div><p className="eyebrow">03 / Component checks</p><h2 className="mt-2 text-xl text-white">Verify every connected part</h2></div><span className="hidden text-xs text-muted sm:block">{tests.length} hardware checks · response-based</span></div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{tests.map((test) => { const state = testStates[test.key]; return <motion.div layout key={test.key} className="rounded-2xl border border-white/10 bg-white/[.035] p-4"><div className="flex items-start justify-between gap-2"><div><p className="text-[10px] uppercase tracking-[.18em] text-muted">{test.family}</p><p className="mt-2 text-sm font-medium text-white">{test.label}</p><p className="mt-1 text-xs text-muted">{test.detail}</p></div><AnimatePresence mode="wait"><motion.span key={state} initial={{ opacity: 0, scale: .8 }} animate={{ opacity: 1, scale: 1 }} className={`status-dot mt-1 ${state === 'working' ? 'status-dot-working' : state === 'faulty' ? 'status-dot-faulty' : 'status-dot-idle'}`} /></AnimatePresence></div><button onClick={() => void runTest(test)} disabled={!isConnected} className="mt-5 flex w-full items-center justify-between rounded-lg border border-white/10 py-2.5 px-3 text-xs text-fog transition hover:border-cyan/40 hover:bg-cyan/10 disabled:cursor-not-allowed disabled:opacity-40"><span>{state === 'working' ? 'Working / response received' : state === 'faulty' ? 'Faulty / retry test' : 'Run hardware test'}</span><span>{state === 'working' ? '✓' : '→'}</span></button></motion.div> })}</div></div>
+      <div><div className="mb-3 flex items-end justify-between"><div><p className="eyebrow">03 / Component checks</p><h2 className="mt-2 text-xl text-white">Verify every connected part</h2></div><span className="hidden text-xs text-muted sm:block">{tests.length} hardware checks · response-based</span></div><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{tests.map((test) => { const state = testStates[test.key]; return <motion.div layout key={test.key} className="rounded-2xl border border-white/10 bg-white/[.035] p-4"><div className="flex items-start justify-between gap-2"><div><p className="text-[10px] uppercase tracking-[.18em] text-muted">{test.family}</p><p className="mt-2 text-sm font-medium text-white">{test.label}</p><p className="mt-1 text-xs text-muted">{test.detail}</p></div><AnimatePresence mode="wait"><motion.span key={state} initial={{ opacity: 0, scale: .8 }} animate={{ opacity: 1, scale: 1 }} className={`status-dot mt-1 ${state === 'working' ? 'status-dot-working' : state === 'faulty' ? 'status-dot-faulty' : 'status-dot-idle'}`} /></AnimatePresence></div><button onClick={() => void runTest(test)} disabled={!isConnected || state === 'testing'} className="mt-5 flex w-full items-center justify-between rounded-lg border border-white/10 py-2.5 px-3 text-xs text-fog transition hover:border-cyan/40 hover:bg-cyan/10 disabled:cursor-not-allowed disabled:opacity-40"><span>{state === 'testing' ? 'Test in progress…' : state === 'working' ? 'Working / response received' : state === 'faulty' ? 'Faulty / retry test' : 'Run hardware test'}</span><span>{state === 'working' ? '✓' : state === 'testing' ? '…' : '→'}</span></button></motion.div> })}</div></div>
     </div>
   )
 }
