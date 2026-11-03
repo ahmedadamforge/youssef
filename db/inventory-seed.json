@@ -1,18 +1,274 @@
 [
-  {"id":"arduino-uno","name":"Arduino Uno R3","category":"Microcontrollers","description":"A reliable starter board for rapid prototypes, line followers, and workshops.","image":"/inventory/arduino-uno.jpg","stock":12,"available":8,"unit":"boards","specs":["ATmega328P","14 digital I/O","5V logic"],"accent":"cyan"},
-  {"id":"esp32-devkit","name":"ESP32 DevKit","category":"Microcontrollers","description":"Wi-Fi + Bluetooth microcontroller for connected robots and remote control builds.","image":"/inventory/esp32-devkit.jpg","stock":10,"available":3,"unit":"boards","specs":["Wi-Fi / BLE","Dual core","3.3V logic"],"accent":"orange"},
-  {"id":"raspberry-pi-pico","name":"Raspberry Pi Pico","category":"Microcontrollers","description":"Compact RP2040 board for fast embedded experiments and low-power control.","image":"/inventory/raspberry-pi-pico.jpg","stock":8,"available":6,"unit":"boards","specs":["RP2040","26 GPIO","MicroPython"],"accent":"cyan"},
-  {"id":"ultrasonic-hc-sr04","name":"Ultrasonic HC-SR04","category":"Sensors","description":"Distance sensor for obstacle avoidance, mapping, and autonomous navigation.","image":"/inventory/ultrasonic-hc-sr04.jpg","stock":24,"available":19,"unit":"sensors","specs":["2–400 cm","5V input","Echo / Trigger"],"accent":"mint"},
-  {"id":"pir-motion-sensor","name":"PIR Motion Sensor","category":"Sensors","description":"Detect movement in interactive installations, security builds, and smart lab prototypes.","image":"/inventory/pir-motion-sensor.jpg","stock":16,"available":13,"unit":"sensors","specs":["Digital output","3–7 m range","Adjustable delay"],"accent":"mint"},
-  {"id":"ir-line-sensor","name":"5-Channel IR Line Array","category":"Sensors","description":"Five infrared channels for line following and track detection projects.","image":"/inventory/ir-line-sensor.jpg","stock":10,"available":4,"unit":"arrays","specs":["5 channels","Analog / digital","Black-line detect"],"accent":"orange"},
-  {"id":"dht11-temperature","name":"DHT11 Temperature Sensor","category":"Sensors","description":"Entry-level temperature and humidity sensing for connected robotics experiments.","image":"/inventory/dht11-temperature.jpg","stock":14,"available":10,"unit":"sensors","specs":["0–50°C","20–90% RH","Single-wire"],"accent":"cyan"},
-  {"id":"mpu6050-imu","name":"MPU6050 IMU","category":"Sensors","description":"Six-axis accelerometer and gyroscope for balancing, orientation, and motion tracking.","image":"/inventory/mpu6050-imu.jpg","stock":9,"available":2,"unit":"modules","specs":["6-axis","I²C bus","±16g / 2000°/s"],"accent":"orange"},
-  {"id":"servo-sg90","name":"Micro Servo SG90","category":"Motors","description":"Compact 180° servo for grippers, pan-tilt rigs, and articulated mechanisms.","image":"/inventory/servo-sg90.jpg","stock":18,"available":11,"unit":"servos","specs":["180° rotation","1.8 kg·cm","PWM control"],"accent":"orange"},
-  {"id":"tt-motor-wheel","name":"TT Gear Motor Pair","category":"Motors","description":"Matched gear motors and wheels for 2WD and 4WD mobile robot chassis.","image":"/inventory/tt-motor-wheel.jpg","stock":16,"available":6,"unit":"pairs","specs":["3–6V DC","1:48 gearbox","65 mm wheels"],"accent":"cyan"},
-  {"id":"stepper-28byj48","name":"28BYJ-48 Stepper Kit","category":"Motors","description":"Geared stepper motor and driver board for precise low-speed positioning.","image":"/inventory/stepper-28byj48.jpg","stock":10,"available":3,"unit":"kits","specs":["4-phase","5V drive","ULN2003 board"],"accent":"mint"},
-  {"id":"l298n-motor-driver","name":"L298N Motor Driver","category":"Drivers & Logic","description":"Dual H-bridge driver for controlling two DC motors from a microcontroller.","image":"/inventory/l298n-motor-driver.jpg","stock":12,"available":5,"unit":"drivers","specs":["Dual H-bridge","Up to 2A","6–35V motor"],"accent":"orange"},
-  {"id":"relay-1ch","name":"1-Channel Relay Module","category":"Drivers & Logic","description":"Isolated switching module for lights, pumps, solenoids, and other loads.","image":"/inventory/relay-1ch.jpg","stock":15,"available":9,"unit":"modules","specs":["5V coil","10A contact","Opto-ready"],"accent":"cyan"},
-  {"id":"battery-holder-18650","name":"2-Cell 18650 Holder","category":"Power","description":"Compact battery holder for mobile robot power experiments and portable rigs.","image":"/inventory/battery-holder-18650.jpg","stock":12,"available":7,"unit":"holders","specs":["2-cell","Red / black lead","Protected shell"],"accent":"orange"},
-  {"id":"breadboard-kit","name":"Breadboard Prototype Kit","category":"Prototyping","description":"Full-size solderless breadboard with jumpers and resistors for quick lab builds.","image":"/inventory/breadboard-kit.jpg","stock":14,"available":9,"unit":"kits","specs":["830 tie points","Jumper wires","Resistor set"],"accent":"mint"},
-  {"id":"jumper-kit","name":"Jumper Wire Kit","category":"Prototyping","description":"Breadboard-ready wiring kit for quick lab connections and training sessions.","image":"/inventory/breadboard-kit.jpg","stock":20,"available":14,"unit":"kits","specs":["M-M / M-F / F-F","Dupont 2.54 mm","120 pieces"],"accent":"cyan"}
+  {
+    "id": "capteur-couleur-tcs3200-8652",
+    "name": "Capteur Couleur TCS3200",
+    "category": "Sensors",
+    "description": "Capteur de reconnaissance de couleurs RGB pour tri automatique.",
+    "image": "/inventory/ultrasonic-hc-sr04.jpg",
+    "stock": 9,
+    "available": 9,
+    "unit": "modules",
+    "specs": [
+      "RGB Filter",
+      "Programmable",
+      "5V"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "arduino-uno",
+    "name": "Arduino Uno R3",
+    "category": "Microcontrollers",
+    "description": "A reliable starter board for rapid prototypes, line followers, and workshops.",
+    "image": "/inventory/arduino-uno.jpg",
+    "stock": 12,
+    "available": 8,
+    "unit": "boards",
+    "specs": [
+      "ATmega328P",
+      "14 digital I/O",
+      "5V logic"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "esp32-devkit",
+    "name": "ESP32 DevKit",
+    "category": "Microcontrollers",
+    "description": "Wi-Fi + Bluetooth microcontroller for connected robots and remote control builds.",
+    "image": "/inventory/esp32-devkit.jpg",
+    "stock": 10,
+    "available": 3,
+    "unit": "boards",
+    "specs": [
+      "Wi-Fi / BLE",
+      "Dual core",
+      "3.3V logic"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "raspberry-pi-pico",
+    "name": "Raspberry Pi Pico",
+    "category": "Microcontrollers",
+    "description": "Compact RP2040 board for fast embedded experiments and low-power control.",
+    "image": "/inventory/raspberry-pi-pico.jpg",
+    "stock": 8,
+    "available": 6,
+    "unit": "boards",
+    "specs": [
+      "RP2040",
+      "26 GPIO",
+      "MicroPython"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "ultrasonic-hc-sr04",
+    "name": "Ultrasonic HC-SR04",
+    "category": "Sensors",
+    "description": "Distance sensor for obstacle avoidance, mapping, and autonomous navigation.",
+    "image": "/inventory/ultrasonic-hc-sr04.jpg",
+    "stock": 24,
+    "available": 19,
+    "unit": "sensors",
+    "specs": [
+      "2–400 cm",
+      "5V input",
+      "Echo / Trigger"
+    ],
+    "accent": "mint"
+  },
+  {
+    "id": "pir-motion-sensor",
+    "name": "PIR Motion Sensor",
+    "category": "Sensors",
+    "description": "Detect movement in interactive installations, security builds, and smart lab prototypes.",
+    "image": "/inventory/pir-motion-sensor.jpg",
+    "stock": 16,
+    "available": 13,
+    "unit": "sensors",
+    "specs": [
+      "Digital output",
+      "3–7 m range",
+      "Adjustable delay"
+    ],
+    "accent": "mint"
+  },
+  {
+    "id": "ir-line-sensor",
+    "name": "5-Channel IR Line Array",
+    "category": "Sensors",
+    "description": "Five infrared channels for line following and track detection projects.",
+    "image": "/inventory/ir-line-sensor.jpg",
+    "stock": 10,
+    "available": 4,
+    "unit": "arrays",
+    "specs": [
+      "5 channels",
+      "Analog / digital",
+      "Black-line detect"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "dht11-temperature",
+    "name": "DHT11 Temperature Sensor",
+    "category": "Sensors",
+    "description": "Entry-level temperature and humidity sensing for connected robotics experiments.",
+    "image": "/inventory/dht11-temperature.jpg",
+    "stock": 14,
+    "available": 10,
+    "unit": "sensors",
+    "specs": [
+      "0–50°C",
+      "20–90% RH",
+      "Single-wire"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "mpu6050-imu",
+    "name": "MPU6050 IMU",
+    "category": "Sensors",
+    "description": "Six-axis accelerometer and gyroscope for balancing, orientation, and motion tracking.",
+    "image": "/inventory/mpu6050-imu.jpg",
+    "stock": 9,
+    "available": 2,
+    "unit": "modules",
+    "specs": [
+      "6-axis",
+      "I²C bus",
+      "±16g / 2000°/s"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "servo-sg90",
+    "name": "Micro Servo SG90",
+    "category": "Motors",
+    "description": "Compact 180° servo for grippers, pan-tilt rigs, and articulated mechanisms.",
+    "image": "/inventory/servo-sg90.jpg",
+    "stock": 18,
+    "available": 11,
+    "unit": "servos",
+    "specs": [
+      "180° rotation",
+      "1.8 kg·cm",
+      "PWM control"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "tt-motor-wheel",
+    "name": "TT Gear Motor Pair",
+    "category": "Motors",
+    "description": "Matched gear motors and wheels for 2WD and 4WD mobile robot chassis.",
+    "image": "/inventory/tt-motor-wheel.jpg",
+    "stock": 16,
+    "available": 6,
+    "unit": "pairs",
+    "specs": [
+      "3–6V DC",
+      "1:48 gearbox",
+      "65 mm wheels"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "stepper-28byj48",
+    "name": "28BYJ-48 Stepper Kit",
+    "category": "Motors",
+    "description": "Geared stepper motor and driver board for precise low-speed positioning.",
+    "image": "/inventory/stepper-28byj48.jpg",
+    "stock": 10,
+    "available": 3,
+    "unit": "kits",
+    "specs": [
+      "4-phase",
+      "5V drive",
+      "ULN2003 board"
+    ],
+    "accent": "mint"
+  },
+  {
+    "id": "l298n-motor-driver",
+    "name": "L298N Motor Driver",
+    "category": "Drivers & Logic",
+    "description": "Dual H-bridge driver for controlling two DC motors from a microcontroller.",
+    "image": "/inventory/l298n-motor-driver.jpg",
+    "stock": 12,
+    "available": 5,
+    "unit": "drivers",
+    "specs": [
+      "Dual H-bridge",
+      "Up to 2A",
+      "6–35V motor"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "relay-1ch",
+    "name": "1-Channel Relay Module",
+    "category": "Drivers & Logic",
+    "description": "Isolated switching module for lights, pumps, solenoids, and other loads.",
+    "image": "/inventory/relay-1ch.jpg",
+    "stock": 15,
+    "available": 9,
+    "unit": "modules",
+    "specs": [
+      "5V coil",
+      "10A contact",
+      "Opto-ready"
+    ],
+    "accent": "cyan"
+  },
+  {
+    "id": "battery-holder-18650",
+    "name": "2-Cell 18650 Holder",
+    "category": "Power",
+    "description": "Compact battery holder for mobile robot power experiments and portable rigs.",
+    "image": "/inventory/battery-holder-18650.jpg",
+    "stock": 12,
+    "available": 7,
+    "unit": "holders",
+    "specs": [
+      "2-cell",
+      "Red / black lead",
+      "Protected shell"
+    ],
+    "accent": "orange"
+  },
+  {
+    "id": "breadboard-kit",
+    "name": "Breadboard Prototype Kit",
+    "category": "Prototyping",
+    "description": "Full-size solderless breadboard with jumpers and resistors for quick lab builds.",
+    "image": "/inventory/breadboard-kit.jpg",
+    "stock": 14,
+    "available": 9,
+    "unit": "kits",
+    "specs": [
+      "830 tie points",
+      "Jumper wires",
+      "Resistor set"
+    ],
+    "accent": "mint"
+  },
+  {
+    "id": "jumper-kit",
+    "name": "Jumper Wire Kit",
+    "category": "Prototyping",
+    "description": "Breadboard-ready wiring kit for quick lab connections and training sessions.",
+    "image": "/inventory/breadboard-kit.jpg",
+    "stock": 20,
+    "available": 14,
+    "unit": "kits",
+    "specs": [
+      "M-M / M-F / F-F",
+      "Dupont 2.54 mm",
+      "120 pieces"
+    ],
+    "accent": "cyan"
+  }
 ]

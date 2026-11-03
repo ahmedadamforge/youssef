@@ -6,30 +6,20 @@ import mysql from 'mysql2/promise'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const databaseUrl = process.env.DATABASE_URL
 
-if (!databaseUrl) {
-  throw new Error('DATABASE_URL is not configured in this runtime.')
-}
+if (!databaseUrl) throw new Error('DATABASE_URL is not configured in this runtime.')
 
-const schema = await fs.readFile(path.join(root, 'db/migrations/001_inventory.sql'), 'utf8')
-const seed = JSON.parse(await fs.readFile(path.join(root, 'db/inventory-seed.json'), 'utf8'))
 const connection = await mysql.createConnection(databaseUrl)
 
 try {
-  await connection.query(schema)
-  await connection.beginTransaction()
-  for (const item of seed) {
-    await connection.execute(
-      `INSERT INTO inventory_items (id, name, category, description, image, stock, available, unit, specs, accent)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         name = VALUES(name), category = VALUES(category), description = VALUES(description),
-         image = VALUES(image), stock = VALUES(stock), available = LEAST(inventory_items.available, VALUES(stock)),
-         unit = VALUES(unit), specs = VALUES(specs), accent = VALUES(accent)`,
-      [item.id, item.name, item.category, item.description, item.image, item.stock, item.available, item.unit, JSON.stringify(item.specs), item.accent],
-    )
+  for (const migration of ['001_inventory.sql', '002_hardware_test_runs.sql']) {
+    const schema = await fs.readFile(path.join(root, 'db/migrations', migration), 'utf8')
+    const statements = schema.split(';').map(s => s.trim()).filter(Boolean)
+    for (const statement of statements) await connection.query(statement)
   }
-  await connection.commit()
-  console.log(`Inventory database ready: ${seed.length} items seeded.`)
+
+  const [columns] = await connection.query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory_loans' AND COLUMN_NAME = 'member_user_id'")
+  if (!columns.length) await connection.query('ALTER TABLE inventory_loans ADD COLUMN member_user_id VARCHAR(80) NULL AFTER member_name')
+  console.log('Inventory, accounts and hardware test history schema ready. No sample records inserted.')
 } catch (error) {
   await connection.rollback()
   throw error

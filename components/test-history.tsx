@@ -1,0 +1,10 @@
+'use client'
+
+import type { TestRun } from '@/lib/inventory-types'
+
+export default function TestHistory({ runs }: { runs: TestRun[] }) {
+  return <section className="glass-panel rounded-[22px] p-5 sm:p-6">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4"><div><p className="eyebrow">05 / Traçabilité</p><h2 className="mt-2 text-xl text-white">Historique des tests</h2><p className="mt-1 text-xs text-muted">Chaque résultat est associé à l’opérateur, au matériel sélectionné et aux mesures reçues.</p></div><span className="rounded-full border border-white/10 px-3 py-1 font-mono text-[10px] text-muted">{runs.length} résultat{runs.length > 1 ? 's' : ''}</span></div>
+    {runs.length === 0 ? <p className="py-6 text-center text-xs text-muted">Sélectionnez un matériel puis lancez un test pour créer le premier rapport.</p> : <div className="mt-4 grid gap-2 md:grid-cols-2">{runs.slice(0, 12).map(run => <article key={run.id} className="rounded-xl border border-white/10 bg-white/[.025] p-3"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-semibold text-white">{run.itemName || 'Test sans matériel associé'}</p><p className="mt-1 text-xs text-muted">{run.testLabel} · {run.testedBy}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${run.status === 'passed' ? 'bg-mint/10 text-mint' : 'bg-orange/10 text-orange'}`}>{run.status === 'passed' ? 'Fonctionnel' : run.status === 'timeout' ? 'Timeout' : 'Échec'}</span></div><div className="mt-3 flex flex-wrap gap-2 text-[10px] text-muted"><span>{new Date(run.testedAt).toLocaleString('fr-FR')}</span><span className="font-mono text-cyan">{run.command}</span>{Object.entries(run.measurements).filter(([, value]) => value !== '--' && value !== '—').slice(0, 3).map(([key, value]) => <span key={key} className="rounded bg-white/10 px-1.5 py-0.5">{key}: {value}</span>)}</div>{run.errorDetail && <p className="mt-2 font-mono text-[10px] text-orange">{run.errorDetail}</p>}</article>)}</div>}
+  </section>
+}

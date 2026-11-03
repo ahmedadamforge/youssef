@@ -1,140 +1,110 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
-import inventorySeed from '@/db/inventory-seed.json'
+import dynamic from 'next/dynamic'
+import { useCallback, useDeferredValue, useMemo, useState } from 'react'
+import type { Item, Loan } from '@/lib/inventory-types'
+import { buildCatalogIndex, filterCatalog, CATEGORY_LABELS, type StockFilter } from '@/lib/inventory-catalog-model'
+import useInventory from './use-inventory'
+import InventoryItemCard from './inventory-item-card'
+import { useSession } from './session-provider'
 
-type Category = 'All' | 'Sensors' | 'Motors' | 'Microcontrollers' | 'Drivers & Logic' | 'Power' | 'Prototyping'
-type StockFilter = 'all' | 'available' | 'low'
-type Item = {
-  id: string
-  name: string
-  category: Exclude<Category, 'All'>
-  description: string
-  image: string
-  stock: number
-  available: number
-  unit: string
-  specs: string[]
-  accent: string
+function ModalLoading() {
+  return <div role="status" className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 text-fog">Ouverture…</div>
 }
+const LoanModal = dynamic(() => import('./loan-modal'), { loading: ModalLoading })
+const QrLabelModal = dynamic(() => import('./qr-label-modal'), { loading: ModalLoading })
+const AddMaterialModal = dynamic(() => import('./add-material-modal'), { loading: ModalLoading })
+const ActiveLoansList = dynamic(() => import('./active-loans-list'), {
+  loading: () => <p role="status" className="text-muted">Chargement des emprunts…</p>,
+})
 
-const inventorySeedItems = inventorySeed as Item[]
-
-const categoryOrder: Category[] = ['All', 'Sensors', 'Motors', 'Microcontrollers', 'Drivers & Logic', 'Power', 'Prototyping']
-const accentClass: Record<string, string> = { cyan: 'text-cyan border-cyan/20 bg-cyan/10', orange: 'text-orange border-orange/20 bg-orange/10', mint: 'text-mint border-mint/20 bg-mint/10' }
+export const RESPONSIBLE_NAME = 'EL HANSALI Youssef'
+const SAVED_MESSAGE = 'Modification enregistrée. Le prochain export Excel contient les données à jour.'
 
 export default function InventoryCatalog() {
-  const [inventory, setInventory] = useState<Item[]>(inventorySeedItems)
-  const [stockSource, setStockSource] = useState<'database' | 'local'>('local')
+  const user = useSession()
+  const isAdmin = user.role === 'admin'
+  const { items: inventory, loans, loading, loadError, stockUpdatingId, refresh, recordItem, recordLoan, adjustStock, returnLoan } = useInventory()
   const [stockMessage, setStockMessage] = useState<string | null>(null)
-  const [updating, setUpdating] = useState<string[]>([])
-  const [activeCategory, setActiveCategory] = useState<Category>('All')
+  const [activeCategory, setActiveCategory] = useState('All')
   const [stockFilter, setStockFilter] = useState<StockFilter>('all')
   const [query, setQuery] = useState('')
-  const [borrowed, setBorrowed] = useState<string[]>([])
-  const [showBorrowed, setShowBorrowed] = useState(false)
+  const deferredQuery = useDeferredValue(query)
+  const [activeTab, setActiveTab] = useState<'catalog' | 'loans'>('catalog')
+  const [selectedForLoan, setSelectedForLoan] = useState<Item | null>(null)
+  const [selectedForQr, setSelectedForQr] = useState<Item | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
 
-  useEffect(() => {
-    let mounted = true
-    fetch('/api/inventory', { cache: 'no-store' })
-      .then(async (response) => {
-        if (!response.ok) throw new Error('inventory database unavailable')
-        return response.json() as Promise<{ items?: Item[]; source?: 'database' }>
-      })
-      .then((payload) => {
-        if (!mounted || !payload.items?.length) return
-        setInventory(payload.items)
-        setStockSource('database')
-        setStockMessage(null)
-      })
-      .catch(() => {
-        if (mounted) { setStockSource('local'); setStockMessage('Database unavailable — showing the local inventory snapshot.') }
-      })
-    return () => { mounted = false }
-  }, [])
+  const catalog = useMemo(() => buildCatalogIndex(inventory), [inventory])
+  const { categories, categoryCounts, totalAvailable } = catalog
+  const activeLoansCount = useMemo(() => loans.reduce((count, loan) => count + Number(loan.status === 'active'), 0), [loans])
+  const filtered = useMemo(() => filterCatalog(catalog, activeCategory, stockFilter, deferredQuery), [catalog, activeCategory, stockFilter, deferredQuery])
 
-  const categoryCounts = useMemo(() => inventory.reduce<Record<string, number>>((counts, item) => ({ ...counts, [item.category]: (counts[item.category] || 0) + 1 }), {}), [])
-  const filtered = useMemo(() => inventory.filter((item) => {
-    const haystack = `${item.name} ${item.id} ${item.category} ${item.description} ${item.specs.join(' ')}`.toLowerCase()
-    const categoryMatch = activeCategory === 'All' || item.category === activeCategory
-    const searchMatch = haystack.includes(query.toLowerCase())
-    const stockMatch = stockFilter === 'all' || (stockFilter === 'available' && item.available > 0) || (stockFilter === 'low' && item.available / item.stock < 0.35)
-    const borrowedMatch = !showBorrowed || borrowed.includes(item.id)
-    return categoryMatch && searchMatch && stockMatch && borrowedMatch
-  }), [activeCategory, borrowed, query, showBorrowed, stockFilter])
-
-  const totalAvailable = inventory.reduce((sum, item) => sum + item.available, 0)
-  const totalUnits = inventory.reduce((sum, item) => sum + item.stock, 0)
-  const lowStock = inventory.filter((item) => item.available / item.stock < 0.35).length
-
-  async function toggleBorrow(item: Item) {
-    const isBorrowed = borrowed.includes(item.id)
-    const action = isBorrowed ? 'release' : 'reserve'
-    setStockMessage(null)
-    setUpdating((current) => [...current, item.id])
-    try {
-      if (stockSource === 'database') {
-        const response = await fetch(`/api/inventory/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })
-        const payload = await response.json() as { item?: Item; error?: string }
-        if (!response.ok || !payload.item) throw new Error(payload.error || 'Stock update failed')
-        setInventory((current) => current.map((entry) => entry.id === item.id ? payload.item as Item : entry))
-      } else {
-        setInventory((current) => current.map((entry) => entry.id === item.id ? { ...entry, available: action === 'reserve' ? Math.max(0, entry.available - 1) : Math.min(entry.stock, entry.available + 1) } : entry))
-      }
-      setBorrowed((current) => isBorrowed ? current.filter((id) => id !== item.id) : [...current, item.id])
-    } catch (error) {
-      setStockMessage(error instanceof Error ? error.message : 'Stock update failed.')
-    } finally {
-      setUpdating((current) => current.filter((id) => id !== item.id))
-    }
-  }
   function resetFilters() {
-    setQuery(''); setActiveCategory('All'); setStockFilter('all'); setShowBorrowed(false)
+    setQuery('')
+    setActiveCategory('All')
+    setStockFilter('all')
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div className="stat-card"><p className="eyebrow">Catalog</p><p className="mt-2 text-2xl font-medium text-white">{inventory.length}<span className="ml-2 text-xs text-muted">SKUs</span></p><p className="mt-1 text-xs text-muted">Across {categoryOrder.length - 1} families</p></div>
-        <div className="stat-card"><p className="eyebrow">Available now</p><p className="mt-2 text-2xl font-medium text-mint">{totalAvailable}<span className="ml-2 text-xs text-muted">units</span></p><p className="mt-1 text-xs text-muted">of {totalUnits} tracked units</p></div>
-        <div className="stat-card"><p className="eyebrow">Low stock</p><p className="mt-2 text-2xl font-medium text-orange">{lowStock}<span className="ml-2 text-xs text-muted">items</span></p><p className="mt-1 text-xs text-muted">Restock before workshops</p></div>
-        <div className="stat-card"><p className="eyebrow">Your list</p><p className="mt-2 text-2xl font-medium text-cyan">{borrowed.length}<span className="ml-2 text-xs text-muted">reserved</span></p><p className="mt-1 text-xs text-muted">Ready for checkout</p></div>
-      </div>
+  function handleAddSuccess(item: Item) {
+    recordItem(item)
+    resetFilters()
+    setActiveTab('catalog')
+    setStockMessage(SAVED_MESSAGE)
+  }
 
-      <div className="glass-panel overflow-hidden rounded-[22px]">
-        <div className="flex flex-col gap-4 border-b border-white/10 p-5 lg:flex-row lg:items-center lg:justify-between">
-          <div><p className="eyebrow">Lab inventory / 02</p><h2 className="mt-2 text-2xl font-medium tracking-[-0.035em] text-white">Every component, ready to build<span className="text-cyan">.</span></h2><p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Search by part name, reference, specification, or category. Filter stock levels, reserve a component, and prepare your next robotics session.</p></div>
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/10 px-3 py-2 text-xs text-muted"><span className={`status-dot ${stockSource === 'database' ? 'status-dot-working' : 'status-dot-idle'}`} /> {stockSource === 'database' ? 'Database synced' : 'Local snapshot'} <span className="mx-1 text-white/20">/</span> {inventory.length} references</div>
-        </div>
-        {stockMessage && <div className="border-b border-orange/20 bg-orange/5 px-5 py-3 text-xs text-orange">{stockMessage}</div>}
+  function handleLoanSuccess(loan: Loan, item: Item) {
+    recordLoan(loan, item)
+    setStockMessage(SAVED_MESSAGE)
+  }
 
-        <div className="space-y-3 border-b border-white/10 p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">{categoryOrder.map((category) => <button key={category} onClick={() => setActiveCategory(category)} className={`rounded-full border px-3 py-2 text-xs transition ${activeCategory === category ? 'border-cyan/40 bg-cyan/10 text-cyan' : 'border-white/10 text-muted hover:border-white/20 hover:text-fog'}`}>{category}{category !== 'All' && <span className="ml-2 text-[10px] opacity-60">{categoryCounts[category] || 0}</span>}{category === 'All' && <span className="ml-2 text-[10px] opacity-60">{inventory.length}</span>}</button>)}</div>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="flex min-w-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-muted"><span className="text-sm">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search components, specs..." className="w-full bg-transparent text-fog outline-none placeholder:text-muted md:w-48" /></label>
-              <button onClick={() => setShowBorrowed((value) => !value)} className={`whitespace-nowrap rounded-full border px-3 py-2 text-xs transition ${showBorrowed ? 'border-orange/40 bg-orange/10 text-orange' : 'border-white/10 text-muted hover:text-fog'}`}>My borrow list {borrowed.length ? `· ${borrowed.length}` : ''}</button>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2"><span className="mr-1 text-[10px] font-semibold uppercase tracking-[.18em] text-muted">Stock</span>{([['all', 'All stock'], ['available', 'Available'], ['low', 'Low stock']] as [StockFilter, string][]).map(([value, label]) => <button key={value} onClick={() => setStockFilter(value)} className={`rounded-md border px-2.5 py-1.5 text-[11px] transition ${stockFilter === value ? 'border-mint/30 bg-mint/10 text-mint' : 'border-white/10 text-muted hover:text-fog'}`}>{label}</button>)}<span className="ml-auto text-[11px] text-muted">Showing {filtered.length} of {inventory.length}</span></div>
-        </div>
+  const handleAdjustStock = useCallback(async (id: string, delta: number) => {
+    try {
+      if (await adjustStock(id, delta)) setStockMessage(SAVED_MESSAGE)
+    } catch (error) {
+      setStockMessage(error instanceof Error ? error.message : 'Erreur de modification du stock.')
+    }
+  }, [adjustStock])
 
-        <div className="grid gap-px bg-white/10 md:grid-cols-2 xl:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {filtered.map((item) => {
-              const isBorrowed = borrowed.includes(item.id)
-              const stockRatio = item.available / item.stock
-              return <motion.article key={item.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: .25 }} className="group bg-[#0d2631] p-4">
-                <div className="relative overflow-hidden rounded-2xl bg-white"><img src={item.image} alt={`${item.name} component`} className="h-48 w-full object-cover transition duration-500 group-hover:scale-[1.03]" /><div className="absolute left-3 top-3 flex flex-wrap gap-2"><span className={`rounded-full border px-2.5 py-1 text-[10px] font-medium ${accentClass[item.accent]}`}>{item.category}</span>{stockRatio < .35 && <span className="rounded-full border border-orange/30 bg-[#371b12]/90 px-2.5 py-1 text-[10px] text-orange">Low stock</span>}</div><div className="absolute bottom-3 right-3 rounded-full bg-[#07161E]/85 px-2.5 py-1 font-mono text-[10px] text-fog">{item.id.toUpperCase()}</div></div>
-                <div className="px-1 pt-4"><div className="flex items-start justify-between gap-3"><div><h3 className="text-base font-medium text-white">{item.name}</h3><p className="mt-1.5 min-h-[42px] text-xs leading-5 text-muted">{item.description}</p></div><span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${item.available > 0 ? 'bg-mint shadow-[0_0_0_4px_rgba(147,229,192,.1)]' : 'bg-orange'}`} /></div><div className="mt-4 flex flex-wrap gap-1.5">{item.specs.map((spec) => <span key={spec} className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[10px] text-muted">{spec}</span>)}</div><div className="mt-4"><div className="mb-2 flex items-center justify-between text-[11px]"><span className="text-muted">Availability</span><span className={stockRatio < .35 ? 'text-orange' : 'text-mint'}>{item.available} / {item.stock} {item.unit}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-white/10"><div className={`h-full rounded-full ${stockRatio < .35 ? 'bg-orange' : 'bg-cyan'}`} style={{ width: `${stockRatio * 100}%` }} /></div></div><button onClick={() => void toggleBorrow(item)} disabled={(!isBorrowed && item.available === 0) || updating.includes(item.id)} className={`mt-4 flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-xs transition ${isBorrowed ? 'border-orange/40 bg-orange/10 text-orange' : 'border-cyan/20 bg-cyan/[0.06] text-cyan hover:border-cyan/40 hover:bg-cyan/10'} disabled:cursor-not-allowed disabled:opacity-40`}><span>{updating.includes(item.id) ? 'Updating stock…' : isBorrowed ? 'Reserved for your build' : item.available ? 'Add to borrow list' : 'Currently unavailable'}</span><span>{updating.includes(item.id) ? '…' : isBorrowed ? '✓' : '＋'}</span></button></div>
-              </motion.article>
-            })}
-          </AnimatePresence>
+  const handleReturnLoan = useCallback(async (id: string) => {
+    await returnLoan(id)
+    setStockMessage('Retour enregistré.')
+  }, [returnLoan])
+
+  return <div className="inventory-workspace">
+    {loading && <p role="status" className="notice">Chargement de votre inventaire…</p>}
+    {loadError && <div role="alert" className="notice notice-error">{loadError}<button className="button-secondary" onClick={() => void refresh()}>Réessayer</button></div>}
+    <fieldset disabled={loading || !!loadError} className="inventory-fieldset">
+      <div className="inventory-commandbar reference-heading"><div><h1>Inventaire</h1><p>Les bons composants. Toujours à portée.</p></div><div className="command-actions">{isAdmin && <><a className="button-secondary export-action" href="/api/inventory/export" download="inventaire-cmc-robotics-el-hansali.xlsx">Exporter Excel</a><button className="button-primary" onClick={() => setShowAddModal(true)}>+ Ajouter du matériel</button></>} </div></div>
+      <div className="reference-summary" aria-label="Résumé de l’inventaire"><span><strong>{totalAvailable}</strong> unités disponibles</span><button onClick={() => setActiveTab('loans')}><strong>{activeLoansCount}</strong> emprunts actifs</button></div>
+      <div className="inventory-tabbar" role="tablist" aria-label="Vue de l’inventaire" onKeyDown={event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
+        event.preventDefault()
+        const next = event.key === 'Home' ? 'catalog' : event.key === 'End' ? 'loans' : activeTab === 'catalog' ? 'loans' : 'catalog'
+        setActiveTab(next)
+        event.currentTarget.querySelector<HTMLButtonElement>(`#${next}-tab`)?.focus()
+      }}><button id="catalog-tab" role="tab" tabIndex={activeTab === 'catalog' ? 0 : -1} aria-selected={activeTab === 'catalog'} aria-controls="catalog-panel" onClick={() => setActiveTab('catalog')}>Catalogue</button><button id="loans-tab" role="tab" tabIndex={activeTab === 'loans' ? 0 : -1} aria-selected={activeTab === 'loans'} aria-controls="loans-panel" onClick={() => setActiveTab('loans')}>{isAdmin ? 'Emprunts actifs' : 'Mes emprunts'}</button></div>
+      {stockMessage && <div role="status" className="notice"><span>{stockMessage}</span><button aria-label="Fermer la notification" onClick={() => setStockMessage(null)}>Fermer</button></div>}
+      {activeTab === 'loans' ? <section id="loans-panel" role="tabpanel" aria-labelledby="loans-tab" className="loans-panel"><ActiveLoansList loans={loans} onReturnLoan={handleReturnLoan} /></section> : <section id="catalog-panel" aria-busy={query !== deferredQuery} role="tabpanel" aria-labelledby="catalog-tab">
+        <div className="catalog-toolbar"><label className="catalog-search"><span className="sr-only">Rechercher du matériel</span><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Rechercher un matériel (nom, modèle…)" /></label><label><span className="sr-only">Catégorie</span><select value={activeCategory} onChange={e => setActiveCategory(e.target.value)}>{categories.map(c => <option key={c} value={c}>{CATEGORY_LABELS[c] || c} ({c === 'All' ? inventory.length : categoryCounts[c] || 0})</option>)}</select></label><label><span className="sr-only">Disponibilité</span><select value={stockFilter} onChange={e => setStockFilter(e.target.value as StockFilter)}><option value="all">Toutes les disponibilités</option><option value="available">En stock</option><option value="low">Stock faible</option></select></label></div>
+        {(query || activeCategory !== 'All' || stockFilter !== 'all') && <div className="catalog-resultline"><span>{filtered.length} résultat(s)</span><button onClick={resetFilters}>Effacer les filtres</button></div>}
+
+        <div className="catalog-grid">
+          {filtered.map(item => <InventoryItemCard
+            key={item.id}
+            item={item}
+            stockBusy={stockUpdatingId !== null}
+            canManageStock={isAdmin}
+            onBorrow={setSelectedForLoan}
+            onQr={setSelectedForQr}
+            onAdjustStock={handleAdjustStock}
+          />)}
         </div>
-        {!filtered.length && <div className="p-12 text-center"><p className="text-sm text-fog">No components match this view.</p><button onClick={resetFilters} className="mt-3 text-xs text-cyan hover:underline">Reset filters</button></div>}
-        <div className="flex flex-col gap-3 border-t border-white/10 p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm text-fog">Need another component?</p><p className="mt-1 text-xs text-muted">Ask the lab manager to add a reference or report a stock mismatch.</p></div><button className="rounded-xl border border-white/10 px-4 py-2.5 text-xs text-fog transition hover:border-cyan/30 hover:text-cyan">Contact inventory lead <span className="ml-2">↗</span></button></div>
-      </div>
-    </div>
-  )
+        {!filtered.length && !loading && <div className="inventory-empty"><span className="empty-kicker">{inventory.length ? 'AUCUN RÉSULTAT' : isAdmin ? 'VOTRE ATELIER COMMENCE ICI' : 'LE CATALOGUE DU LABORATOIRE'}</span><h2>{inventory.length ? 'Aucun composant trouvé.' : isAdmin ? 'Prêt à organiser votre matériel ?' : 'Aucun matériel disponible pour le moment.'}</h2><p>{inventory.length ? 'Essayez un autre nom ou élargissez vos filtres.' : isAdmin ? 'Ajoutez votre premier composant pour suivre les stocks et les emprunts.' : 'Le responsable du laboratoire ajoutera le matériel ici.'}</p>{(inventory.length > 0 || isAdmin) && <button className="button-primary" onClick={inventory.length ? resetFilters : () => setShowAddModal(true)}>{inventory.length ? 'Réinitialiser les filtres' : '+ Ajouter mon premier matériel'}</button>}</div>}
+      </section>}
+    </fieldset>
+    {isAdmin && showAddModal && <AddMaterialModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onSuccess={handleAddSuccess} />}
+    {selectedForLoan && <LoanModal item={selectedForLoan} onClose={() => setSelectedForLoan(null)} onSuccess={handleLoanSuccess} />}
+    {selectedForQr && <QrLabelModal item={selectedForQr} onClose={() => setSelectedForQr(null)} />}
+  </div>
 }

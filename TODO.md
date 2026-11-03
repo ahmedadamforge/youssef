@@ -14,7 +14,22 @@
 - [ ] Build the responsive Home/Dashboard with the club logo, stats, upcoming events, and recent robotics projects.
 - [ ] Build the Projects Showcase gallery with technical details, galleries, and detail views.
 - [ ] Build the Events & Workshops calendar for training sessions, hackathons, and national competitions with registration.
-- [ ] Add authenticated member sessions with Supabase or Firebase.
-- [ ] Build the Inventory catalog for sensors, motors, microcontrollers, and other electronics, including availability and borrowing.
+- [x] Add authenticated member sessions with local/MySQL storage and server-enforced admin/user roles.
+- [ ] Integrate a managed identity provider if required for future deployment.
+- [x] Build the Inventory catalog for sensors, motors, microcontrollers, and other electronics, including availability and borrowing.
 - [ ] Build Member Profile and Leaderboard screens with points, activity, and borrowing history.
 - [ ] Initialize the managed Expo runtime and connect the mobile client to authentication and database services.
+
+## Inventory usability completion
+- [x] Apply the selected dark catalog with horizontal navigation and responsive product grid.
+- [x] Keep QR labels and stock controls in each item's action menu.
+- [x] Remove fictional member and project shortcuts from borrowing.
+- [x] Default loan equipment to untested until the operator confirms its condition.
+- [x] Show failed returns and clipboard errors in the interface.
+- [x] Prevent older refresh responses from overwriting newer inventory changes.
+- [x] Support keyboard navigation between catalog and loans.
+- [x] Fit loan and QR dialogs on small screens.
+
+## Add material form completion
+- [x] In « Ajouter du matériel », provide a descending list of robotics and electronics material types, including sensors, motors, boards, drivers, power, prototyping, communication, displays, actuators, mechanics, connectors, tools, hardware, and ESD protection.
+- [x] In « Ajouter du matériel », provide a named descending illustration list covering the 16 inventory visuals already available in `public/inventory`, with a preview and an optional custom image URL.
